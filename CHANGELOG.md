@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-04-01
+
+### Added
+
+- added `CompareVersions` for semantic version comparison
+- added `platform` package with cross-platform OS abstraction (Unix/Windows)
+- added `selfupdate` package with parameterized self-update command for GitHub releases
+
 ### Changed
 
 - changed the Go module dependencies to their latest versions
 
-### Added
-- added `selfupdate` package with parameterized self-update command for GitHub releases
-- added `platform` package with cross-platform OS abstraction (Unix/Windows)
-- added `CompareVersions` for semantic version comparison
