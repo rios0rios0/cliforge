@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/rios0rios0/cliforge/selfupdate"
+	"github.com/rios0rios0/cliforge/pkg/selfupdate"
 )
 
 func TestCompareVersions(t *testing.T) {

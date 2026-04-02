@@ -3,7 +3,7 @@ package builders
 import (
 	testkit "github.com/rios0rios0/testkit/pkg/test"
 
-	"github.com/rios0rios0/cliforge/test/doubles"
+	"github.com/rios0rios0/cliforge/pkg/test/doubles"
 )
 
 // OSStubBuilder builds OSStub instances using the builder pattern.

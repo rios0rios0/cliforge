@@ -1,6 +1,6 @@
 package doubles
 
-import "github.com/rios0rios0/cliforge/platform"
+import "github.com/rios0rios0/cliforge/pkg/platform"
 
 // Compile-time interface check.
 var _ platform.OS = (*OSStub)(nil)

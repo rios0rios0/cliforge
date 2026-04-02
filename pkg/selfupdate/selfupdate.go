@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/rios0rios0/cliforge/platform"
+	"github.com/rios0rios0/cliforge/pkg/platform"
 	logger "github.com/sirupsen/logrus"
 )
 

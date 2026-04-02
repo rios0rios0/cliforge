@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/rios0rios0/cliforge/platform"
+	"github.com/rios0rios0/cliforge/pkg/platform"
 )
 
 const (

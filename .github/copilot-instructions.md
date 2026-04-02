@@ -39,21 +39,23 @@ The project provides two packages, both consumed as library imports:
 
 ```
 cliforge/
-├── platform/
-│   ├── os.go              # OS interface: Download, Extract, Move, Remove, MakeExecutable
-│   ├── os_unix.go         # OSUnix implementation (tar, mv, rm, chmod) -- build tag: !windows
-│   ├── os_windows.go      # OSWindows implementation (PowerShell) -- build tag: windows
-│   └── platform.go        # Info: normalizes runtime.GOOS/GOARCH (Android -> Linux mapping)
-├── selfupdate/
-│   ├── selfupdate.go      # Command: NewCommand(owner, repo, binary, version), Execute(dryRun, force)
-│   ├── github.go          # fetchLatestRelease: GitHub API call, asset matching by {binary}-{version}-{os}-{arch}.{ext}
-│   ├── version.go         # CompareVersions: semver comparison, "dev" always older, zero-padding
-│   └── archive.go         # extractArchive: delegates to tar (Unix) or platform.OS.Extract (Windows)
-├── test/
-│   ├── doubles/
-│   │   └── os_stub.go     # OSStub: stub implementing platform.OS with configurable errors
-│   └── builders/
-│       └── os_stub_builder.go  # OSStubBuilder: fluent builder for OSStub
+├── pkg/
+│   ├── platform/
+│   │   ├── os.go              # OS interface: Download, Extract, Move, Remove, MakeExecutable
+│   │   ├── os_unix.go         # OSUnix implementation (tar, mv, rm, chmod) -- build tag: !windows
+│   │   ├── os_windows.go      # OSWindows implementation (PowerShell) -- build tag: windows
+│   │   └── platform.go        # Info: normalizes runtime.GOOS/GOARCH (Android -> Linux mapping)
+│   ├── selfupdate/
+│   │   ├── selfupdate.go      # Command: NewCommand(owner, repo, binary, version), Execute(dryRun, force)
+│   │   ├── github.go          # fetchLatestRelease: GitHub API call, asset matching by {binary}-{version}-{os}-{arch}.{ext}
+│   │   ├── version.go         # CompareVersions: semver comparison, "dev" always older, zero-padding
+│   │   ├── version_test.go    # Unit tests for CompareVersions
+│   │   └── archive.go         # extractArchive: delegates to tar (Unix) or platform.OS.Extract (Windows)
+│   └── test/
+│       ├── doubles/
+│       │   └── os_stub.go     # OSStub: stub implementing platform.OS with configurable errors
+│       └── builders/
+│           └── os_stub_builder.go  # OSStubBuilder: fluent builder for OSStub
 ├── Makefile               # Imports pipeline scripts (lint, test, sast)
 ├── go.mod                 # Module: github.com/rios0rios0/cliforge
 └── .github/
@@ -94,13 +96,13 @@ Consumer CLI tool
 
 ### Test Infrastructure
 
-`test/doubles/` contains stub implementations:
+`pkg/test/doubles/` contains stub implementations:
 
 | Stub     | Implements    |
 |----------|---------------|
 | `OSStub` | `platform.OS` |
 
-`test/builders/` provides builder-pattern helpers for constructing stubs in tests.
+`pkg/test/builders/` provides builder-pattern helpers for constructing stubs in tests.
 
 ### Running Tests
 
