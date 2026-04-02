@@ -14,8 +14,8 @@ type OSStub struct {
 	MakeExecutableErr error
 }
 
-func (s *OSStub) Download(_, _ string) error       { return s.DownloadErr }
-func (s *OSStub) Extract(_, _ string) error         { return s.ExtractErr }
-func (s *OSStub) Move(_, _ string) error            { return s.MoveErr }
-func (s *OSStub) Remove(_ string) error             { return s.RemoveErr }
-func (s *OSStub) MakeExecutable(_ string) error     { return s.MakeExecutableErr }
+func (s *OSStub) Download(_, _ string) error    { return s.DownloadErr }
+func (s *OSStub) Extract(_, _ string) error     { return s.ExtractErr }
+func (s *OSStub) Move(_, _ string) error        { return s.MoveErr }
+func (s *OSStub) Remove(_ string) error         { return s.RemoveErr }
+func (s *OSStub) MakeExecutable(_ string) error { return s.MakeExecutableErr }

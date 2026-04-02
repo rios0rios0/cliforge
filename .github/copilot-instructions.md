@@ -10,7 +10,7 @@ Always reference these instructions first and fall back to search or bash comman
 
 - Install dependencies: `go mod download`
 - Build (compile check): `go build ./...`
-- Run tests: `make test` -- NEVER run `go test` directly.
+- Run tests: `make test` (preferred) or `go test ./...` for quick checks during development.
 - Run linting: `make lint` -- NEVER run `golangci-lint` directly.
 - Run security analysis: `make sast` -- NEVER run `gitleaks`, `semgrep`, `trivy`, `hadolint`, or `codeql` directly.
 - Tidy dependencies: `go mod tidy`
