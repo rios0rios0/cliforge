@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rios0rios0/cliforge/platform"
+	"github.com/rios0rios0/cliforge/pkg/platform"
 )
 
 const (
@@ -62,7 +62,7 @@ func fetchLatestRelease(owner, repo, binaryName string) (string, string, error) 
 
 	version := strings.TrimPrefix(release.TagName, "v")
 
-	p := platform.GetPlatformInfo()
+	p := platform.GetInfo()
 	ext := "tar.gz"
 	if p.GetOSString() == windowsOS {
 		ext = "zip"

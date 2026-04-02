@@ -5,27 +5,27 @@ import (
 	"strings"
 )
 
-// PlatformInfo holds OS and architecture information.
-type PlatformInfo struct {
+// Info holds OS and architecture information.
+type Info struct {
 	OS   string
 	Arch string
 }
 
-// GetPlatformInfo returns the current operating system and architecture.
-func GetPlatformInfo() PlatformInfo {
-	return PlatformInfo{
+// GetInfo returns the current operating system and architecture.
+func GetInfo() Info {
+	return Info{
 		OS:   runtime.GOOS,
 		Arch: runtime.GOARCH,
 	}
 }
 
 // GetPlatformString returns a formatted platform string in the format OS_ARCH.
-func (p PlatformInfo) GetPlatformString() string {
+func (p Info) GetPlatformString() string {
 	return p.OS + "_" + p.Arch
 }
 
 // GetArchString returns the architecture string normalized for release binaries.
-func (p PlatformInfo) GetArchString() string {
+func (p Info) GetArchString() string {
 	// Handle Android architecture which includes "android_" prefix
 	if after, ok := strings.CutPrefix(p.Arch, "android_"); ok {
 		return after
@@ -34,7 +34,7 @@ func (p PlatformInfo) GetArchString() string {
 }
 
 // GetOSString returns the OS string normalized for release binaries.
-func (p PlatformInfo) GetOSString() string {
+func (p Info) GetOSString() string {
 	// Android uses Linux binaries
 	if p.OS == "android" {
 		return "linux"
