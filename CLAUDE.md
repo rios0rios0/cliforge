@@ -26,11 +26,11 @@ Two packages, both consumed as library imports by downstream CLI tools:
 - `OS` interface (`os.go`) defines 5 operations: `Download`, `Extract`, `Move`, `Remove`, `MakeExecutable`
 - `OSUnix` (`os_unix.go`) implements via shell commands (`tar`, `mv`, `rm`, `chmod`)
 - `OSWindows` (`os_windows.go`) implements via PowerShell
-- `PlatformInfo` (`platform.go`) normalizes `runtime.GOOS`/`runtime.GOARCH` (handles Android-to-Linux mapping)
+- `Info` (`platform.go`) normalizes `runtime.GOOS`/`runtime.GOARCH` (handles Android-to-Linux mapping)
 - Build tags (`//go:build !windows` / `//go:build windows`) select the implementation at compile time
 
 ### `selfupdate/` -- GitHub release self-update
-- `SelfUpdateCommand` (`selfupdate.go`) is the main public API. Created via `NewSelfUpdateCommand(owner, repo, binaryName, currentVersion)`, executed via `Execute(dryRun, force)`
+- `Command` (`selfupdate.go`) is the main public API. Created via `NewCommand(owner, repo, binaryName, currentVersion)`, executed via `Execute(dryRun, force)`
 - Update flow: fetch latest GitHub release -> compare versions -> download matching asset -> extract -> backup current binary -> replace -> cleanup
 - `fetchLatestRelease` (`github.go`) calls `api.github.com` with 30s timeout, matches assets by pattern `{binary}-{version}-{os}-{arch}.{tar.gz|zip}`
 - `CompareVersions` (`version.go`) implements semver comparison; treats `"dev"` as always older; pads unequal-length versions with zeros
@@ -39,7 +39,7 @@ Two packages, both consumed as library imports by downstream CLI tools:
 ### Dependency flow
 ```
 Consumer CLI tool
-  -> selfupdate.SelfUpdateCommand
+  -> selfupdate.Command
        -> platform.OS (interface, injected per OS via build tags)
        -> selfupdate.CompareVersions (pure function)
        -> selfupdate.fetchLatestRelease (HTTP + JSON)

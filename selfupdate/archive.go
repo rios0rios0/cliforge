@@ -16,7 +16,7 @@ const (
 
 // extractArchive extracts the downloaded archive to the destination directory.
 func extractArchive(archivePath, destDir string) error {
-	p := platform.GetPlatformInfo()
+	p := platform.GetInfo()
 
 	// On Windows, use the OS abstraction (PowerShell Expand-Archive) for .zip files
 	if p.GetOSString() == windowsOS {

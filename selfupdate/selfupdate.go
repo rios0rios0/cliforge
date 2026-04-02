@@ -11,17 +11,17 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
-// SelfUpdateCommand checks for and applies updates from GitHub releases.
-type SelfUpdateCommand struct {
+// Command checks for and applies updates from GitHub releases.
+type Command struct {
 	owner          string
 	repo           string
 	binaryName     string
 	currentVersion string
 }
 
-// NewSelfUpdateCommand creates a new SelfUpdateCommand parameterized for a specific CLI tool.
-func NewSelfUpdateCommand(owner, repo, binaryName, currentVersion string) *SelfUpdateCommand {
-	return &SelfUpdateCommand{
+// NewCommand creates a new Command parameterized for a specific CLI tool.
+func NewCommand(owner, repo, binaryName, currentVersion string) *Command {
+	return &Command{
 		owner:          owner,
 		repo:           repo,
 		binaryName:     binaryName,
@@ -30,7 +30,7 @@ func NewSelfUpdateCommand(owner, repo, binaryName, currentVersion string) *SelfU
 }
 
 // Execute checks for updates and applies them if available.
-func (it *SelfUpdateCommand) Execute(dryRun, force bool) error {
+func (it *Command) Execute(dryRun, force bool) error {
 	logger.Infof("Checking for %s updates...", it.binaryName)
 	logger.Infof("Current %s version: %s", it.binaryName, it.currentVersion)
 
@@ -69,7 +69,7 @@ func (it *SelfUpdateCommand) Execute(dryRun, force bool) error {
 	}
 }
 
-func (it *SelfUpdateCommand) promptForUpdate(latestVersion string) bool {
+func (it *Command) promptForUpdate(latestVersion string) bool {
 	logger.Infof("%s version %s is available (current: %s)", it.binaryName, latestVersion, it.currentVersion)
 	logger.Info("Do you want to update? [y/N]: ")
 
@@ -85,7 +85,7 @@ func (it *SelfUpdateCommand) promptForUpdate(latestVersion string) bool {
 	return response == "y" || response == "yes"
 }
 
-func (it *SelfUpdateCommand) performUpdate(downloadURL string) error {
+func (it *Command) performUpdate(downloadURL string) error {
 	currentOS := platform.GetOS()
 
 	currentExe, err := os.Executable()
@@ -123,7 +123,7 @@ func (it *SelfUpdateCommand) performUpdate(downloadURL string) error {
 	}
 
 	resolvedBinaryName := it.binaryName
-	if platform.GetPlatformInfo().GetOSString() == windowsOS {
+	if platform.GetInfo().GetOSString() == windowsOS {
 		resolvedBinaryName = it.binaryName + ".exe"
 	}
 	extractedBinary := filepath.Join(tempDir, resolvedBinaryName)

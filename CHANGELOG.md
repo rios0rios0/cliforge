@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- added test infrastructure with `OSStub` double and `OSStubBuilder`
+- added CI/CD workflow, Makefile, contributing guide, and copilot instructions
+- added unit tests for `CompareVersions` function
+
+### Changed
+
+- changed `PlatformInfo` to `Info` and `SelfUpdateCommand` to `Command` to avoid Go stuttering lint violations
+
 ## [0.1.0] - 2026-04-01
 
 ### Added

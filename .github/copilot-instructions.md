@@ -43,9 +43,9 @@ cliforge/
 │   ├── os.go              # OS interface: Download, Extract, Move, Remove, MakeExecutable
 │   ├── os_unix.go         # OSUnix implementation (tar, mv, rm, chmod) -- build tag: !windows
 │   ├── os_windows.go      # OSWindows implementation (PowerShell) -- build tag: windows
-│   └── platform.go        # PlatformInfo: normalizes runtime.GOOS/GOARCH (Android -> Linux mapping)
+│   └── platform.go        # Info: normalizes runtime.GOOS/GOARCH (Android -> Linux mapping)
 ├── selfupdate/
-│   ├── selfupdate.go      # SelfUpdateCommand: NewSelfUpdateCommand(owner, repo, binary, version), Execute(dryRun, force)
+│   ├── selfupdate.go      # Command: NewCommand(owner, repo, binary, version), Execute(dryRun, force)
 │   ├── github.go          # fetchLatestRelease: GitHub API call, asset matching by {binary}-{version}-{os}-{arch}.{ext}
 │   ├── version.go         # CompareVersions: semver comparison, "dev" always older, zero-padding
 │   └── archive.go         # extractArchive: delegates to tar (Unix) or platform.OS.Extract (Windows)
@@ -67,8 +67,8 @@ cliforge/
 | `OS`                | `platform`   | Interface: `Download`, `Extract`, `Move`, `Remove`, `MakeExecutable`                 |
 | `OSUnix`            | `platform`   | Unix implementation via shell commands (`tar`, `mv`, `rm`, `chmod`)                  |
 | `OSWindows`         | `platform`   | Windows implementation via PowerShell                                                |
-| `PlatformInfo`      | `platform`   | Normalizes `runtime.GOOS`/`runtime.GOARCH` (handles Android-to-Linux mapping)        |
-| `SelfUpdateCommand` | `selfupdate` | Main public API: check for updates from GitHub releases, download, backup, replace   |
+| `Info`      | `platform`   | Normalizes `runtime.GOOS`/`runtime.GOARCH` (handles Android-to-Linux mapping)        |
+| `Command` | `selfupdate` | Main public API: check for updates from GitHub releases, download, backup, replace   |
 | `CompareVersions`   | `selfupdate` | Semver comparison; `"dev"` always older; pads unequal-length versions with zeros      |
 | `GitHubRelease`     | `selfupdate` | JSON mapping for GitHub release API response                                         |
 
@@ -76,7 +76,7 @@ cliforge/
 
 ```
 Consumer CLI tool
-  -> selfupdate.SelfUpdateCommand
+  -> selfupdate.Command
        -> platform.OS (interface, injected per OS via build tags)
        -> selfupdate.CompareVersions (pure function)
        -> selfupdate.fetchLatestRelease (HTTP + JSON)

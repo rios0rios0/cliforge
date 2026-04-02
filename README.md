@@ -26,7 +26,7 @@ go get github.com/rios0rios0/cliforge
 ```go
 import "github.com/rios0rios0/cliforge/selfupdate"
 
-cmd := selfupdate.NewSelfUpdateCommand("owner", "repo", "binary-name", currentVersion)
+cmd := selfupdate.NewCommand("owner", "repo", "binary-name", currentVersion)
 err := cmd.Execute(dryRun, force)
 ```
 
