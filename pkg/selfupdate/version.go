@@ -7,14 +7,16 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
+const devVersion = "dev"
+
 // CompareVersions compares two semantic versions.
 // Returns: -1 if v1 < v2, 0 if v1 == v2, 1 if v1 > v2.
 // Development builds ("dev") are always considered older than any release.
 func CompareVersions(v1, v2 string) int {
-	if v1 == "dev" {
+	if v1 == devVersion {
 		return -1
 	}
-	if v2 == "dev" {
+	if v2 == devVersion {
 		return 1
 	}
 

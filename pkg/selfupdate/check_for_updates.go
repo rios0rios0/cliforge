@@ -2,6 +2,7 @@ package selfupdate
 
 import (
 	"os"
+	"path/filepath"
 	"time"
 
 	logger "github.com/sirupsen/logrus"
@@ -19,12 +20,19 @@ func ShouldCheckForUpdates(binaryModTime, now time.Time) bool {
 
 // CheckForUpdates checks if a newer version of the binary is available on GitHub
 // and logs a warning if so. It is designed to be called on CLI startup.
-// If the binary was modified today, the check is skipped entirely.
-// Errors are logged at debug level and never returned.
+// If the binary was modified today or the current version is "dev", the check
+// is skipped entirely. The network call runs in a goroutine to avoid blocking
+// CLI startup. Errors are logged at debug level and never returned.
 func (it *Command) CheckForUpdates() {
 	execPath, err := os.Executable()
 	if err != nil {
 		logger.Debugf("failed to get executable path: %v", err)
+		return
+	}
+
+	execPath, err = filepath.EvalSymlinks(execPath)
+	if err != nil {
+		logger.Debugf("failed to resolve executable symlinks: %v", err)
 		return
 	}
 
@@ -39,17 +47,24 @@ func (it *Command) CheckForUpdates() {
 		return
 	}
 
-	latestVersion, _, err := fetchLatestRelease(it.owner, it.repo, it.binaryName)
-	if err != nil {
-		logger.Debugf("failed to fetch latest release: %v", err)
+	if it.currentVersion == devVersion {
+		logger.Debug("development build detected, skipping update check")
 		return
 	}
 
-	if CompareVersions(it.currentVersion, latestVersion) < 0 {
-		logger.Warnf(
-			"A new version of %s is available: %s (current: %s). "+
-				"Run the self-update command to upgrade.",
-			it.binaryName, latestVersion, it.currentVersion,
-		)
-	}
+	go func() {
+		latestVersion, fetchErr := fetchLatestVersion(it.owner, it.repo)
+		if fetchErr != nil {
+			logger.Debugf("failed to fetch latest release: %v", fetchErr)
+			return
+		}
+
+		if CompareVersions(it.currentVersion, latestVersion) < 0 {
+			logger.Warnf(
+				"A new version of %s is available: %s (current: %s). "+
+					"Run the self-update command to upgrade.",
+				it.binaryName, latestVersion, it.currentVersion,
+			)
+		}
+	}()
 }
