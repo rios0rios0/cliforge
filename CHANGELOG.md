@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- added `CheckForUpdates` method for automatic version checking on CLI startup
+- added `ShouldCheckForUpdates` function to skip checks when binary was modified today
+
 ### Changed
 
 - changed the Go module dependencies to their latest versions
