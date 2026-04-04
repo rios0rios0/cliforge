@@ -30,8 +30,10 @@ Two packages, both consumed as library imports by downstream CLI tools:
 - Build tags (`//go:build !windows` / `//go:build windows`) select the implementation at compile time
 
 ### `pkg/selfupdate/` -- GitHub release self-update
-- `Command` (`selfupdate.go`) is the main public API. Created via `NewCommand(owner, repo, binaryName, currentVersion)`, executed via `Execute(dryRun, force)`
+- `Command` (`selfupdate.go`) is the main public API. Created via `NewCommand(owner, repo, binaryName, currentVersion)`, executed via `Execute(dryRun, force)` or checked passively via `CheckForUpdates()`
 - Update flow: fetch latest GitHub release -> compare versions -> download matching asset -> extract -> backup current binary -> replace -> cleanup
+- `CheckForUpdates` (`check_for_updates.go`) passively checks for newer versions on CLI startup; skips the check if the binary was modified today. Errors are silently logged at debug level
+- `ShouldCheckForUpdates` (`check_for_updates.go`) is a pure function that compares binary modification date against today
 - `fetchLatestRelease` (`github.go`) calls `api.github.com` with 30s timeout, matches assets by pattern `{binary}-{version}-{os}-{arch}.{tar.gz|zip}`
 - `CompareVersions` (`version.go`) implements semver comparison; treats `"dev"` as always older; pads unequal-length versions with zeros
 - `extractArchive` (`archive.go`) delegates to platform-specific extraction
