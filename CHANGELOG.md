@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - changed the Go module dependencies to their latest versions
+- changed the Go version to `1.26.2` and updated all module dependencies
 
 ## [0.2.0] - 2026-04-03
 
