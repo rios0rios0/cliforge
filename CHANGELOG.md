@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- changed `CheckForUpdates` to throttle the GitHub API call to once per day across all CLI invocations by persisting a `last_update_check` marker file under the user's cache directory (`os.UserCacheDir()`)
+
 ## [0.3.2] - 2026-04-16
 
 ### Changed
