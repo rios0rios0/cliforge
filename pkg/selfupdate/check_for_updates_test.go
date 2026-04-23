@@ -3,10 +3,13 @@
 package selfupdate_test
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/rios0rios0/cliforge/pkg/selfupdate"
 )
@@ -74,5 +77,50 @@ func TestShouldCheckForUpdates(t *testing.T) {
 
 		// then
 		assert.True(t, result)
+	})
+}
+
+// TestCheckForUpdatesDailyThrottle cannot use t.Parallel because it mutates
+// the user's cache directory environment variables via t.Setenv.
+func TestCheckForUpdatesDailyThrottle(t *testing.T) {
+	t.Run("should not fire HTTP call when marker file was touched today", func(t *testing.T) {
+		// given
+		cacheOverride := t.TempDir()
+		// Cover the env vars read by os.UserCacheDir across supported platforms:
+		// XDG_CACHE_HOME on Linux, LocalAppData on Windows, HOME on macOS.
+		t.Setenv("XDG_CACHE_HOME", cacheOverride)
+		t.Setenv("LocalAppData", cacheOverride)
+		t.Setenv("HOME", cacheOverride)
+
+		resolvedCacheDir, err := os.UserCacheDir()
+		require.NoError(t, err)
+
+		binaryName := "throttle-test-binary"
+		markerDir := filepath.Join(resolvedCacheDir, binaryName)
+		require.NoError(t, os.MkdirAll(markerDir, 0o750))
+		markerPath := filepath.Join(markerDir, "last_update_check")
+		file, err := os.Create(markerPath)
+		require.NoError(t, err)
+		require.NoError(t, file.Close())
+
+		// Set a fixed past-today mtime so we can later assert the throttle did
+		// not overwrite it. Using a fixed timestamp (rather than time.Now()) keeps
+		// the assertion stable and avoids multiple wall-clock reads.
+		seededMtime := time.Now().Add(-2 * time.Hour).Truncate(time.Second)
+		require.NoError(t, os.Chtimes(markerPath, seededMtime, seededMtime))
+
+		cmd := selfupdate.NewCommand("owner-that-does-not-exist", "repo-that-does-not-exist", binaryName, "0.0.1")
+
+		// when
+		cmd.CheckForUpdates()
+
+		// then
+		info, statErr := os.Stat(markerPath)
+		require.NoError(t, statErr)
+		assert.Truef(t,
+			info.ModTime().Equal(seededMtime),
+			"marker mtime should be unchanged; expected %s, got %s",
+			seededMtime, info.ModTime(),
+		)
 	})
 }
