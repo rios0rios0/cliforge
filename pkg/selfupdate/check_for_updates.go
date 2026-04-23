@@ -90,14 +90,22 @@ func (it *Command) CheckForUpdates() {
 
 // updateCheckMarkerPath returns the path to the marker file used to track the
 // last time an update check ran. Returns an empty string if the user cache
-// directory cannot be resolved.
+// directory cannot be resolved or if the binary name cannot be sanitized into
+// a safe single-segment directory name.
 func (it *Command) updateCheckMarkerPath() string {
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
 		logger.Debugf("failed to resolve user cache directory: %v", err)
 		return ""
 	}
-	return filepath.Join(cacheDir, it.binaryName, updateCheckMarkerFilename)
+	// Sanitize binaryName: strip any path components so a malformed name
+	// such as "../evil" or "/abs/path" cannot escape the cache directory.
+	safeName := filepath.Base(filepath.Clean(it.binaryName))
+	if safeName == "." || safeName == string(filepath.Separator) || safeName == "" {
+		logger.Debugf("invalid binary name for marker path: %q", it.binaryName)
+		return ""
+	}
+	return filepath.Join(cacheDir, safeName, updateCheckMarkerFilename)
 }
 
 // touchFile creates the file (and any missing parent directories) if it does
