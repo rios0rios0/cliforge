@@ -103,10 +103,10 @@ func (it *Command) updateCheckMarkerPath() string {
 // touchFile creates the file (and any missing parent directories) if it does
 // not exist and sets both its access and modification times to now.
 func touchFile(path string, now time.Time) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return err
 	}
-	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0o644)
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0o600)
 	if err != nil {
 		return err
 	}
