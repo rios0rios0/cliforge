@@ -32,8 +32,8 @@ Two packages, both consumed as library imports by downstream CLI tools:
 ### `pkg/selfupdate/` -- GitHub release self-update
 - `Command` (`selfupdate.go`) is the main public API. Created via `NewCommand(owner, repo, binaryName, currentVersion)`, executed via `Execute(dryRun, force)` or checked passively via `CheckForUpdates()`
 - Update flow: fetch latest GitHub release -> compare versions -> download matching asset -> extract -> backup current binary -> replace -> cleanup
-- `CheckForUpdates` (`check_for_updates.go`) passively checks for newer versions on CLI startup; skips the check if the binary was modified today. Errors are silently logged at debug level
-- `ShouldCheckForUpdates` (`check_for_updates.go`) is a pure function that compares binary modification date against today
+- `CheckForUpdates` (`check_for_updates.go`) passively checks for newer versions on CLI startup. Skips if the current version is `"dev"`, the binary was modified today, or a marker file under the user's cache directory (`os.UserCacheDir()`) was already touched today. The network call runs in a goroutine to avoid blocking startup. Errors are silently logged at debug level
+- `ShouldCheckForUpdates` (`check_for_updates.go`) is a pure function that returns false when two timestamps fall on the same calendar day; used for both the binary modification time check and the daily marker file check
 - `fetchLatestRelease` (`github.go`) calls `api.github.com` with 30s timeout, matches assets by pattern `{binary}-{version}-{os}-{arch}.{tar.gz|zip}`
 - `CompareVersions` (`version.go`) implements semver comparison; treats `"dev"` as always older; pads unequal-length versions with zeros
 - `extractArchive` (`archive.go`) delegates to platform-specific extraction

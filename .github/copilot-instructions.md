@@ -47,6 +47,7 @@ cliforge/
 │   │   └── platform.go        # Info: normalizes runtime.GOOS/GOARCH (Android -> Linux mapping)
 │   ├── selfupdate/
 │   │   ├── selfupdate.go      # Command: NewCommand(owner, repo, binary, version), Execute(dryRun, force)
+│   │   ├── check_for_updates.go # CheckForUpdates: passive startup version check, throttled to once/day via marker file in os.UserCacheDir()
 │   │   ├── github.go          # fetchLatestRelease: GitHub API call, asset matching by {binary}-{version}-{os}-{arch}.{ext}
 │   │   ├── version.go         # CompareVersions: semver comparison, "dev" always older, zero-padding
 │   │   ├── version_test.go    # Unit tests for CompareVersions
