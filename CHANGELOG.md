@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- refreshed `CLAUDE.md` and `.github/copilot-instructions.md` to document the daily update-check throttle via marker file added in v0.3.3
+
 ## [0.3.3] - 2026-04-23
 
 ### Changed
