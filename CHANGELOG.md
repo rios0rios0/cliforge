@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - changed the Go module dependencies to their latest versions
+- refreshed `CLAUDE.md` and `.github/copilot-instructions.md` to fix `go test` commands (added missing `-tags unit` flag) and correct `os_windows.go` build-constraint description
 
 ## [0.3.6] - 2026-05-08
 
