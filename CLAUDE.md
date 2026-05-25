@@ -24,7 +24,7 @@ Two packages, both consumed as library imports by downstream CLI tools:
 
 ### `pkg/platform/` -- Cross-platform OS abstraction
 - `OS` interface (`os.go`) defines 5 operations: `Download`, `Extract`, `Move`, `Remove`, `MakeExecutable`
-- `OSUnix` (`os_unix.go`) implements via shell commands (`tar`, `mv`, `rm`, `chmod`)
+- `OSUnix` (`os_unix.go`) implements via shell commands (`unzip`, `mv`, `rm`) and Go's `os.Chmod`
 - `OSWindows` (`os_windows.go`) implements via PowerShell
 - `Info` (`platform.go`) normalizes `runtime.GOOS`/`runtime.GOARCH` (handles Android-to-Linux mapping)
 - `//go:build !windows` on `os_unix.go` and Go's `_windows.go` filename convention select the implementation at compile time

@@ -42,7 +42,7 @@ cliforge/
 ├── pkg/
 │   ├── platform/
 │   │   ├── os.go              # OS interface: Download, Extract, Move, Remove, MakeExecutable
-│   │   ├── os_unix.go         # OSUnix implementation (tar, mv, rm, chmod) -- build tag: !windows
+│   │   ├── os_unix.go         # OSUnix implementation (unzip, mv, rm, os.Chmod) -- build tag: !windows
 │   │   ├── os_windows.go      # OSWindows implementation (PowerShell) -- filename convention: windows-only
 │   │   └── platform.go        # Info: normalizes runtime.GOOS/GOARCH (Android -> Linux mapping)
 │   ├── selfupdate/
@@ -68,7 +68,7 @@ cliforge/
 | Type                | Package      | Purpose                                                                              |
 |---------------------|--------------|--------------------------------------------------------------------------------------|
 | `OS`                | `platform`   | Interface: `Download`, `Extract`, `Move`, `Remove`, `MakeExecutable`                 |
-| `OSUnix`            | `platform`   | Unix implementation via shell commands (`tar`, `mv`, `rm`, `chmod`)                  |
+| `OSUnix`            | `platform`   | Unix implementation via shell commands (`unzip`, `mv`, `rm`) and `os.Chmod`          |
 | `OSWindows`         | `platform`   | Windows implementation via PowerShell                                                |
 | `Info`      | `platform`   | Normalizes `runtime.GOOS`/`runtime.GOARCH` (handles Android-to-Linux mapping)        |
 | `Command` | `selfupdate` | Main public API: check for updates from GitHub releases, download, backup, replace   |
