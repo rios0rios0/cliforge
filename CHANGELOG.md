@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- refreshed `CLAUDE.md` and `.github/copilot-instructions.md` to correct `OSUnix` description (`unzip`, not `tar`; `os.Chmod`, not shell `chmod`)
+
 ## [0.3.8] - 2026-05-22
 
 ### Changed
