@@ -1,6 +1,6 @@
 module github.com/rios0rios0/cliforge
 
-go 1.26.3
+go 1.26.4
 
 require (
 	github.com/rios0rios0/testkit v0.2.1
