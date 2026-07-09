@@ -1,6 +1,6 @@
 module github.com/rios0rios0/cliforge
 
-go 1.26.4
+go 1.26.5
 
 require (
 	github.com/rios0rios0/testkit v0.2.1
@@ -11,6 +11,6 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/sys v0.46.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
