@@ -111,7 +111,13 @@ func (it *Command) updateCheckMarkerPath() string {
 // touchFile creates the file (and any missing parent directories) if it does
 // not exist and sets both its access and modification times to now.
 func touchFile(path string, now time.Time) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
+	// The marker directory is private to the current user, so no group or other
+	// access is granted. 0o700 is the tightest mode a directory can use: without
+	// the owner execute (search) bit the marker file inside it is unreachable.
+	// Semgrep applies its file threshold of 0o600 to directory creation too,
+	// which no usable directory mode can satisfy.
+	// nosemgrep: go.lang.correctness.permissions.file_permission.incorrect-default-permission
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0o600)
