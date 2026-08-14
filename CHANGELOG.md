@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- changed the Go version to `1.26.6` and updated all module dependencies
+
+### Security
+
+- changed the update-check marker directory mode from `0o750` to `0o700`, removing group access from a directory that is private to the current user
+
 ## [0.3.14] - 2026-07-14
 
 ### Changed

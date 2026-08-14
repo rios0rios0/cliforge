@@ -97,7 +97,10 @@ func TestCheckForUpdatesDailyThrottle(t *testing.T) {
 
 		binaryName := "throttle-test-binary"
 		markerDir := filepath.Join(resolvedCacheDir, binaryName)
-		require.NoError(t, os.MkdirAll(markerDir, 0o750))
+		// 0o700 mirrors the mode the production code uses for this directory and
+		// is the tightest a directory can be while remaining traversable.
+		// nosemgrep: go.lang.correctness.permissions.file_permission.incorrect-default-permission
+		require.NoError(t, os.MkdirAll(markerDir, 0o700))
 		markerPath := filepath.Join(markerDir, "last_update_check")
 		file, err := os.Create(markerPath)
 		require.NoError(t, err)

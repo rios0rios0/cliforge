@@ -1,10 +1,10 @@
 module github.com/rios0rios0/cliforge
 
-go 1.26.5
+go 1.26.6
 
 require (
 	github.com/rios0rios0/testkit v0.2.6
-	github.com/sirupsen/logrus v1.9.4
+	github.com/sirupsen/logrus v1.10.0
 	github.com/stretchr/testify v1.11.1
 )
 
