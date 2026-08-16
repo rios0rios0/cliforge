@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.16] - 2026-08-16
+
 ### Changed
 
 - changed the Go module dependencies to their latest versions
