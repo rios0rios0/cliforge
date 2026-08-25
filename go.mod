@@ -3,7 +3,7 @@ module github.com/rios0rios0/cliforge
 go 1.27.0
 
 require (
-	github.com/rios0rios0/testkit v0.2.7
+	github.com/rios0rios0/testkit v0.2.8
 	github.com/sirupsen/logrus v1.10.1
 	github.com/stretchr/testify v1.12.1
 )
