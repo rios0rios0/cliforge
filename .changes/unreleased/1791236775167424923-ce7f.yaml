@@ -1,0 +1,3 @@
+kind: 'Fixed'
+body: 'fixed `self-update` on Windows, which could not succeed: the download was saved without the `.zip` extension that PowerShell''s `Expand-Archive` requires, and the swap ran `move` and `del`, which are `cmd.exe` builtins with no executable behind them. Extraction and the swap now run in Go, the new binary is staged beside the running one before the swap, and every backup gets a unique name, so an update succeeds even while an earlier release still runs from its backup, as a detached daemon does'
+time: '2026-10-05T21:46:15.157272259Z'

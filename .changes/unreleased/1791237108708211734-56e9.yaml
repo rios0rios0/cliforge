@@ -1,0 +1,3 @@
+kind: 'Fixed'
+body: 'fixed the passive update check spending the day''s check before its lookup returned, so a command that exits within milliseconds printed no notice and suppressed it for the rest of the day: the day now counts as checked only once a lookup has answered, and no more than 5 lookups start in a day while none answers, which keeps short-lived callers such as health probes from becoming one API call per run. The lookup is now skipped, instead of running on every invocation, when the state under the user''s cache directory cannot be used, and a binary name such as `..` can no longer place that state outside the cache directory'
+time: '2026-10-05T21:51:48.708087361Z'

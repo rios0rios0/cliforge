@@ -1,0 +1,3 @@
+kind: 'Changed'
+body: 'changed the unit tests to carry no build tag, so a plain `go test ./...` runs them, and added a `windows-latest` CI job that runs the suite on Windows, where the self-update code paths had never executed'
+time: '2026-10-05T21:35:34.515857619Z'

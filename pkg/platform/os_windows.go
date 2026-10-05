@@ -3,8 +3,14 @@ package platform
 import (
 	"fmt"
 	"os"
-	"os/exec"
+
+	"golang.org/x/sys/windows"
 )
+
+// errCrossDevice is the error a rename fails with when its two paths sit on
+// different volumes. The syscall package's EXDEV is a made-up value on Windows
+// that no rename ever returns.
+const errCrossDevice = windows.ERROR_NOT_SAME_DEVICE
 
 // OSWindows implements OS for Windows systems.
 type OSWindows struct{}
@@ -14,40 +20,24 @@ func (it *OSWindows) Download(url, tempFilePath string) error {
 }
 
 func (it *OSWindows) Extract(tempFilePath, destPath string) error {
-	unzipCmd := exec.Command(
-		"powershell",
-		"Expand-Archive",
-		"-Path",
-		tempFilePath,
-		"-DestinationPath",
-		destPath,
-		"-Force",
-	)
-	unzipCmd.Stderr = os.Stderr
-	unzipCmd.Stdout = os.Stdout
-	err := unzipCmd.Run()
-	if err != nil {
-		err = fmt.Errorf("failed to perform decompressing using 'powershell': %w", err)
+	if err := extractZip(tempFilePath, destPath); err != nil {
+		return fmt.Errorf("failed to extract archive: %w", err)
 	}
-	return err
+	return nil
 }
 
 func (it *OSWindows) Move(tempFilePath, destPath string) error {
-	mvCmd := exec.Command("move", tempFilePath, destPath)
-	err := mvCmd.Run()
-	if err != nil {
-		err = fmt.Errorf("failed to perform moving folder using 'move': %w", err)
+	if err := moveFile(tempFilePath, destPath); err != nil {
+		return fmt.Errorf("failed to move file: %w", err)
 	}
-	return err
+	return nil
 }
 
 func (it *OSWindows) Remove(tempFilePath string) error {
-	rmCmd := exec.Command("del", tempFilePath)
-	err := rmCmd.Run()
-	if err != nil {
-		err = fmt.Errorf("failed to perform deleting folder using 'del': %w", err)
+	if err := os.Remove(tempFilePath); err != nil {
+		return fmt.Errorf("failed to remove file: %w", err)
 	}
-	return err
+	return nil
 }
 
 func (it *OSWindows) MakeExecutable(_ string) error {
