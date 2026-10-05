@@ -19,3 +19,24 @@ permissions:
 jobs:
   default:
     uses: 'rios0rios0/pipelines/.github/workflows/go-library.yaml@main'
+
+  # The shared pipeline runs every job on Linux and only type-checks the Windows
+  # build, yet self-update renames and replaces a running binary, which is exactly
+  # where Windows behaves differently. `go test` runs directly because the
+  # pipeline's test scripts are POSIX shell; the Linux job above still owns
+  # coverage and the published reports.
+  tests-windows:
+    name: 'tests > test:windows'
+    runs-on: 'windows-latest'
+    timeout-minutes: 20
+    permissions:
+      contents: 'read'
+    if: "!startsWith(github.ref, 'refs/tags/')"
+    steps:
+      - uses: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' # v7.0.1
+      - uses: 'actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e' # v7.0.0
+        with:
+          go-version-file: 'go.mod'
+          cache-dependency-path: 'go.sum'
+      - name: 'Run the tests'
+        run: 'go test -count=1 ./...'

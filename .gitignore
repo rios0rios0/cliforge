@@ -3,3 +3,11 @@ build
 
 # this space is for project generated files, DO NOT add personal or IDE files here
 # try to use ~/.gitignore of your user for your workspace generated files
+
+# reports written by `make test` and `make sast`
+coverage.out
+coverage.xml
+cobertura.xml
+*coverage.txt
+junit*.xml
+reports/

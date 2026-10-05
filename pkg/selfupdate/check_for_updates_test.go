@@ -1,5 +1,3 @@
-//go:build unit
-
 package selfupdate_test
 
 import (
@@ -14,10 +12,18 @@ import (
 	"github.com/rios0rios0/cliforge/pkg/selfupdate"
 )
 
+const (
+	// estOffsetSeconds is the UTC offset of US Eastern Standard Time.
+	estOffsetSeconds = -5 * 60 * 60
+	// seededMarkerAge places the seeded marker earlier today.
+	seededMarkerAge = 2 * time.Hour
+)
+
 func TestShouldCheckForUpdates(t *testing.T) {
 	t.Parallel()
 
 	t.Run("should return false when binary was modified today", func(t *testing.T) {
+		t.Parallel()
 		// given
 		now := time.Date(2026, 4, 4, 15, 30, 0, 0, time.UTC)
 		modTime := time.Date(2026, 4, 4, 8, 0, 0, 0, time.UTC)
@@ -30,6 +36,7 @@ func TestShouldCheckForUpdates(t *testing.T) {
 	})
 
 	t.Run("should return true when binary was modified yesterday", func(t *testing.T) {
+		t.Parallel()
 		// given
 		now := time.Date(2026, 4, 4, 15, 30, 0, 0, time.UTC)
 		modTime := time.Date(2026, 4, 3, 23, 59, 0, 0, time.UTC)
@@ -42,6 +49,7 @@ func TestShouldCheckForUpdates(t *testing.T) {
 	})
 
 	t.Run("should return true when binary was modified a week ago", func(t *testing.T) {
+		t.Parallel()
 		// given
 		now := time.Date(2026, 4, 4, 12, 0, 0, 0, time.UTC)
 		modTime := time.Date(2026, 3, 28, 12, 0, 0, 0, time.UTC)
@@ -54,6 +62,7 @@ func TestShouldCheckForUpdates(t *testing.T) {
 	})
 
 	t.Run("should return false when binary was modified at start of today", func(t *testing.T) {
+		t.Parallel()
 		// given
 		now := time.Date(2026, 4, 4, 23, 59, 59, 0, time.UTC)
 		modTime := time.Date(2026, 4, 4, 0, 0, 0, 0, time.UTC)
@@ -66,8 +75,9 @@ func TestShouldCheckForUpdates(t *testing.T) {
 	})
 
 	t.Run("should handle timezone differences correctly", func(t *testing.T) {
+		t.Parallel()
 		// given
-		eastern := time.FixedZone("EST", -5*3600)
+		eastern := time.FixedZone("EST", estOffsetSeconds)
 		now := time.Date(2026, 4, 4, 2, 0, 0, 0, eastern)
 		// modTime is April 4 04:00 UTC, which is April 3 23:00 EST
 		modTime := time.Date(2026, 4, 4, 4, 0, 0, 0, time.UTC)
@@ -109,7 +119,7 @@ func TestCheckForUpdatesDailyThrottle(t *testing.T) {
 		// Set a fixed past-today mtime so we can later assert the throttle did
 		// not overwrite it. Using a fixed timestamp (rather than time.Now()) keeps
 		// the assertion stable and avoids multiple wall-clock reads.
-		seededMtime := time.Now().Add(-2 * time.Hour).Truncate(time.Second)
+		seededMtime := time.Now().Add(-seededMarkerAge).Truncate(time.Second)
 		require.NoError(t, os.Chtimes(markerPath, seededMtime, seededMtime))
 
 		cmd := selfupdate.NewCommand("owner-that-does-not-exist", "repo-that-does-not-exist", binaryName, "0.0.1")

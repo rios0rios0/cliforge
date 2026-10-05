@@ -11,8 +11,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 go build ./...          # Compile the library
 go mod download         # Install dependencies
-go test -tags unit ./...           # Run all tests
-go test -tags unit -run TestName ./pkg/selfupdate  # Run a single test
+go test ./...           # Run all tests
+go test -run TestName ./pkg/selfupdate  # Run a single test
 make lint               # Lint (requires pipelines setup: make setup)
 make test               # Run tests via Makefile
 make sast               # Run security analysis

@@ -10,7 +10,7 @@ Always reference these instructions first and fall back to search or bash comman
 
 - Install dependencies: `go mod download`
 - Build (compile check): `go build ./...`
-- Run tests: `make test` (preferred) or `go test -tags unit ./...` for quick checks during development.
+- Run tests: `make test` (preferred) or `go test ./...` for quick checks during development.
 - Run linting: `make lint` -- NEVER run `golangci-lint` directly.
 - Run security analysis: `make sast` -- NEVER run `gitleaks`, `semgrep`, `trivy`, `hadolint`, or `codeql` directly.
 - Tidy dependencies: `go mod tidy`
@@ -60,7 +60,7 @@ cliforge/
 ├── Makefile               # Imports pipeline scripts (lint, test, sast)
 ├── go.mod                 # Module: github.com/rios0rios0/cliforge
 └── .github/
-    └── workflows/default.yaml  # CI/CD pipeline (delegates to rios0rios0/pipelines go-library workflow)
+    └── workflows/default.yaml  # CI/CD pipeline (delegates to rios0rios0/pipelines go-library workflow) plus a windows-latest test job
 ```
 
 ### Key Types
@@ -90,7 +90,7 @@ Consumer CLI tool
 
 ### Standards
 
-- All test files use the `//go:build unit` build tag. Pass `-tags unit` when running `go test` directly.
+- Unit tests carry no build tag, so a plain `go test ./...` finds them; a `//go:build integration` tag is only for tests that need external infrastructure. CI also runs the suite on `windows-latest`.
 - All tests follow **BDD** structure with `// given`, `// when`, `// then` comment blocks.
 - Test descriptions use `"should ... when ..."` format via `t.Run()` subtests.
 - Unit tests must run in **parallel** using `t.Parallel()` + `t.Run()` unless they mutate process-wide state (e.g. `t.Setenv`).
@@ -110,7 +110,7 @@ Consumer CLI tool
 
 ```bash
 make test             # Full test suite via pipeline scripts (ALWAYS use this)
-go test -tags unit ./...         # Quick compile + test check during development (acceptable)
+go test ./...         # Quick compile + test check during development (acceptable)
 ```
 
 ## Validation
@@ -129,7 +129,7 @@ go test -tags unit ./...         # Quick compile + test check during development
 go build ./... && make lint && make test
 
 # Quick test cycle during development
-go test -tags unit ./...
+go test ./...
 
 # Full security + quality gate
 make lint && make test && make sast

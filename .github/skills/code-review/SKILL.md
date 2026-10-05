@@ -85,7 +85,7 @@ them before the generic ones.
 ```bash
 make lint && make test && make sast
 go build ./...
-go test -tags unit ./...
+go test ./...
 ```
 
 ### Local quality gates
@@ -142,7 +142,7 @@ and YAML blocks inside Markdown.
 
 See [Tests](https://github.com/rios0rios0/guide/wiki/Tests).
 
-- All test files carry `//go:build unit`; pass `-tags unit` when running `go test` directly.
+- Unit tests carry no build tag, so a plain `go test ./...` finds them; a `//go:build integration` tag is only for tests that need external infrastructure. The suite also runs on `windows-latest` in CI (`tests > test:windows`), which is the only place the Windows code paths execute.
 - `"should … when …"` subtests under `t.Run()`, `t.Parallel()` unless the test mutates process-wide state (for example `t.Setenv`).
 - Doubles come from `pkg/test/doubles/` (`OSStub`) and are constructed with the fluent builders in `pkg/test/builders/` — never a mocking framework.
 
