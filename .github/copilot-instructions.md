@@ -42,21 +42,26 @@ cliforge/
 ├── pkg/
 │   ├── platform/
 │   │   ├── os.go              # OS interface: Download, Extract, Move, Remove, MakeExecutable
-│   │   ├── os_unix.go         # OSUnix implementation (unzip, mv, rm, os.Chmod) -- build tag: !windows
-│   │   ├── os_windows.go      # OSWindows implementation (PowerShell) -- filename convention: windows-only
+│   │   ├── move_file.go       # moveFile: rename, or a copy finished by a rename when the paths cross volumes
+│   │   ├── extract_zip.go     # extractZip: archive/zip through os.Root, regular files only, size-capped
+│   │   ├── os_unix.go         # OSUnix: the pure-Go operations plus os.Chmod -- build tag: !windows
+│   │   ├── os_windows.go      # OSWindows: the pure-Go operations -- filename convention: windows-only
 │   │   └── platform.go        # Info: normalizes runtime.GOOS/GOARCH (Android -> Linux mapping)
 │   ├── selfupdate/
 │   │   ├── selfupdate.go      # Command: NewCommand(owner, repo, binary, version), Execute(dryRun, force)
+│   │   ├── install_binary.go  # installBinary: stage, unique backup, swap, best-effort cleanup
 │   │   ├── check_for_updates.go # CheckForUpdates: passive startup version check, throttled to once/day via marker file in os.UserCacheDir()
 │   │   ├── github.go          # fetchLatestRelease: GitHub API call, asset matching by {binary}-{version}-{os}-{arch}.{ext}
 │   │   ├── version.go         # CompareVersions: semver comparison, "dev" always older, zero-padding
 │   │   ├── version_test.go    # Unit tests for CompareVersions
-│   │   └── archive.go         # extractArchive: delegates to tar (Unix) or platform.OS.Extract (Windows)
+│   │   └── archive.go         # extractArchive: tar (Unix) or platform.OS.Extract, i.e. Go archive/zip (Windows)
 │   └── test/
 │       ├── doubles/
-│       │   └── os_stub.go     # OSStub: stub implementing platform.OS with configurable errors
+│       │   ├── os_stub.go     # OSStub: stub implementing platform.OS with configurable errors
+│       │   └── os_fault_stub.go  # OSFaultStub: wraps a real platform.OS and fails selected moves/removals
 │       └── builders/
-│           └── os_stub_builder.go  # OSStubBuilder: fluent builder for OSStub
+│           ├── os_stub_builder.go  # OSStubBuilder: fluent builder for OSStub
+│           └── os_fault_stub_builder.go  # OSFaultStubBuilder: fluent builder for OSFaultStub
 ├── Makefile               # Imports pipeline scripts (lint, test, sast)
 ├── go.mod                 # Module: github.com/rios0rios0/cliforge
 └── .github/
@@ -68,8 +73,8 @@ cliforge/
 | Type                | Package      | Purpose                                                                              |
 |---------------------|--------------|--------------------------------------------------------------------------------------|
 | `OS`                | `platform`   | Interface: `Download`, `Extract`, `Move`, `Remove`, `MakeExecutable`                 |
-| `OSUnix`            | `platform`   | Unix implementation via shell commands (`unzip`, `mv`, `rm`) and `os.Chmod`          |
-| `OSWindows`         | `platform`   | Windows implementation via PowerShell                                                |
+| `OSUnix`            | `platform`   | Unix implementation: pure-Go move/remove/extract plus `os.Chmod`                    |
+| `OSWindows`         | `platform`   | Windows implementation: the same pure-Go move/remove/extract                        |
 | `Info`      | `platform`   | Normalizes `runtime.GOOS`/`runtime.GOARCH` (handles Android-to-Linux mapping)        |
 | `Command` | `selfupdate` | Main public API: check for updates from GitHub releases, download, backup, replace   |
 | `CompareVersions`   | `selfupdate` | Semver comparison; `"dev"` always older; pads unequal-length versions with zeros      |
@@ -103,6 +108,7 @@ Consumer CLI tool
 | Stub     | Implements    |
 |----------|---------------|
 | `OSStub` | `platform.OS` |
+| `OSFaultStub` | `platform.OS` (wraps a real one, fails selected moves/removals) |
 
 `pkg/test/builders/` provides builder-pattern helpers for constructing stubs in tests.
 

@@ -74,11 +74,11 @@ them before the generic ones.
 
 - **This is a library — treat every exported symbol as public API.** Changing a signature in `pkg/platform` or `pkg/selfupdate` breaks downstream consumers at compile time. Such a change needs the three-place breaking-change flag and a MAJOR bump; prefer adding a new function over changing an existing one.
 - **There is no `main.go` and there should not be one.** A pull request that adds a CLI entry point has misunderstood the module's role.
-- **Self-update runs with the user's privileges and replaces a running binary.** Verify the asset name matches `{binary}-{version}-{os}-{arch}.{ext}` exactly, that the download is over HTTPS, that extraction cannot write outside the target directory (path traversal in an archive entry), and that a failed update leaves the old binary intact.
+- **Self-update runs with the user's privileges and replaces a running binary.** Verify the asset name matches `{binary}-{version}-{os}-{arch}.{ext}` exactly, that the download is over HTTPS, that extraction cannot write outside the target directory (path traversal in an archive entry), and that a failed update leaves the old binary intact. The new binary must reach the executable's path as a new file (a rename), never written in place: consumers such as ccswitch detect an install by comparing file identities with `os.SameFile`, and every backup keeps a unique name because Windows can neither delete nor replace the backup a still-running process (a daemon) executes from.
 - **`CompareVersions` has three documented behaviours** — semantic comparison, `dev` always older, and zero-padding. A change to any of them needs a test for all three.
 - **The startup check is throttled to once a day** via a marker file in `os.UserCacheDir()`. Removing the throttle turns every CLI invocation into a GitHub API call and will get users rate-limited.
 - **Platform split is by build tag and filename**: `os_unix.go` carries `!windows`, `os_windows.go` is Windows-only, and `platform.go` normalises `runtime.GOOS`/`GOARCH` (including the Android → Linux mapping). New OS behaviour goes in the matching file, never behind a runtime `if`.
-- Shelling out to `unzip`, `mv`, `rm`, or PowerShell means user-controlled values must never be concatenated into a command string.
+- File operations are pure Go on both OSes; only Unix extraction still shells out (`tar`), so user-controlled values must never be concatenated into that command line. A zip entry is only ever written through the `os.Root` opened on the destination, never through `filepath.Join(dest, name)`.
 
 ### Commands a reviewer should be able to quote
 

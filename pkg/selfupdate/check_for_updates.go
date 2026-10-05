@@ -72,7 +72,7 @@ func (it *Command) CheckForUpdates() {
 	}
 
 	go func() {
-		latestVersion, fetchErr := fetchLatestVersion(it.owner, it.repo)
+		latestVersion, fetchErr := fetchLatestVersion(it.apiBaseURL, it.owner, it.repo)
 		if fetchErr != nil {
 			logger.Debugf("failed to fetch latest release: %v", fetchErr)
 			return

@@ -18,7 +18,7 @@ const (
 func extractArchive(archivePath, destDir string) error {
 	p := platform.GetInfo()
 
-	// On Windows, use the OS abstraction (PowerShell Expand-Archive) for .zip files
+	// On Windows the release is a .zip, which the OS abstraction unpacks in Go
 	if p.GetOSString() == windowsOS {
 		currentOS := platform.GetOS()
 		return currentOS.Extract(archivePath, destDir)

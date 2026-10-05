@@ -3,16 +3,17 @@
 package platform
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"os/exec"
-	"time"
+	"syscall"
 )
 
 const (
-	osOrwxGrxUx      = 0o755
-	operationTimeout = 30 * time.Second
+	osOrwxGrxUx = 0o755
+
+	// errCrossDevice is the error a rename fails with when its two paths sit on
+	// different filesystems, such as a tmpfs /tmp and the disk a binary lives on.
+	errCrossDevice = syscall.EXDEV
 )
 
 // OSUnix implements OS for Unix-like systems.
@@ -23,38 +24,24 @@ func (it *OSUnix) Download(url, tempFilePath string) error {
 }
 
 func (it *OSUnix) Extract(tempFilePath, destPath string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), operationTimeout)
-	defer cancel()
-	unzipCmd := exec.CommandContext(ctx, "unzip", "-o", tempFilePath, "-d", destPath)
-	unzipCmd.Stderr = os.Stderr
-	unzipCmd.Stdout = os.Stdout
-	err := unzipCmd.Run()
-	if err != nil {
-		err = fmt.Errorf("failed to perform decompressing using 'zip': %w", err)
+	if err := extractZip(tempFilePath, destPath); err != nil {
+		return fmt.Errorf("failed to extract archive: %w", err)
 	}
-	return err
+	return nil
 }
 
 func (it *OSUnix) Move(tempFilePath, destPath string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), operationTimeout)
-	defer cancel()
-	mvCmd := exec.CommandContext(ctx, "mv", tempFilePath, destPath)
-	err := mvCmd.Run()
-	if err != nil {
-		err = fmt.Errorf("failed to perform moving folder using 'mv': %w", err)
+	if err := moveFile(tempFilePath, destPath); err != nil {
+		return fmt.Errorf("failed to move file: %w", err)
 	}
-	return err
+	return nil
 }
 
 func (it *OSUnix) Remove(tempFilePath string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), operationTimeout)
-	defer cancel()
-	rmCmd := exec.CommandContext(ctx, "rm", tempFilePath)
-	err := rmCmd.Run()
-	if err != nil {
-		err = fmt.Errorf("failed to perform deleting folder using 'rm': %w", err)
+	if err := os.Remove(tempFilePath); err != nil {
+		return fmt.Errorf("failed to remove file: %w", err)
 	}
-	return err
+	return nil
 }
 
 func (it *OSUnix) MakeExecutable(filePath string) error {

@@ -12,7 +12,8 @@ Shared Go library providing self-update and platform abstraction for CLI tools t
 ## Features
 
 - **Self-Update**: Check for and install updates from GitHub Releases with dry-run, force, and interactive confirmation support. Passive `CheckForUpdates` startup checks hit the GitHub API at most once per day (tracked via a marker file under the user's cache directory)
-- **Platform Abstraction**: Cross-platform file operations (Unix/Windows) for download, extract, move, and permissions
+- **Platform Abstraction**: Cross-platform file operations for download, extract, move, and permissions, in pure Go on Unix and Windows alike: moves fall back to a copy across volumes, and zip extraction refuses entries that would land outside the destination
+- **Safe binary replacement**: the new release is staged beside the running binary and swapped in with renames, under a unique backup name, so an update succeeds on Windows even while an earlier release is still running
 - **Version Comparison**: Semantic version comparison with dev-build awareness
 
 ## Installation
