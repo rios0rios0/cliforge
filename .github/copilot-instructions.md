@@ -50,7 +50,8 @@ cliforge/
 │   ├── selfupdate/
 │   │   ├── selfupdate.go      # Command: NewCommand(owner, repo, binary, version), Execute(dryRun, force)
 │   │   ├── install_binary.go  # installBinary: stage, unique backup, swap, best-effort cleanup
-│   │   ├── check_for_updates.go # CheckForUpdates: passive startup version check, throttled to once/day via marker file in os.UserCacheDir()
+│   │   ├── check_for_updates.go # CheckForUpdates: passive startup version check; the day counts as checked once a lookup answers, at most 5 lookups/day
+│   │   ├── update_check_state.go # The check's state under os.UserCacheDir(): success marker and today's attempt count
 │   │   ├── github.go          # fetchLatestRelease: GitHub API call, asset matching by {binary}-{version}-{os}-{arch}.{ext}
 │   │   ├── version.go         # CompareVersions: semver comparison, "dev" always older, zero-padding
 │   │   ├── version_test.go    # Unit tests for CompareVersions

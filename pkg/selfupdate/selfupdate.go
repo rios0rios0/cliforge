@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/rios0rios0/cliforge/pkg/platform"
 	logger "github.com/sirupsen/logrus"
@@ -23,6 +24,12 @@ type Command struct {
 	apiBaseURL string
 	// executable resolves the binary an update replaces.
 	executable func() (string, error)
+	// cacheDir resolves the directory the daily update check keeps its state under.
+	cacheDir func() (string, error)
+	// now tells the time; the daily update check compares calendar days.
+	now func() time.Time
+	// background runs the update check's lookup without holding up the command.
+	background func(task func())
 }
 
 // NewCommand creates a new Command parameterized for a specific CLI tool.
@@ -34,6 +41,9 @@ func NewCommand(owner, repo, binaryName, currentVersion string) *Command {
 		currentVersion: currentVersion,
 		apiBaseURL:     githubAPIBaseURL,
 		executable:     resolveExecutable,
+		cacheDir:       os.UserCacheDir,
+		now:            time.Now,
+		background:     runInBackground,
 	}
 }
 
@@ -162,4 +172,9 @@ func resolveExecutable() (string, error) {
 		return "", fmt.Errorf("failed to resolve executable path: %w", err)
 	}
 	return resolved, nil
+}
+
+// runInBackground runs task in a goroutine of its own.
+func runInBackground(task func()) {
+	go task()
 }
