@@ -1,3 +1,0 @@
-kind: 'Changed'
-body: 'changed `OSUnix` and `OSWindows` to move, remove and unzip files in Go instead of running `mv`, `rm`, `unzip`, `move`, `del` and PowerShell: a move across volumes becomes a copy finished by a rename, so the destination always becomes a new file, and a zip entry can no longer land outside the destination directory'
-time: '2026-10-05T21:46:15.177700943Z'
