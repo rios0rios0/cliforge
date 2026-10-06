@@ -13,6 +13,7 @@ Shared Go library providing self-update and platform abstraction for CLI tools t
 
 - **Self-Update**: Check for and install updates from GitHub Releases with dry-run, force, and interactive confirmation support. Passive `CheckForUpdates` startup checks look at most once a day, and a day only counts as checked once a lookup has answered, so a command that exits before its lookup returns leaves the check to the next one; no more than 5 lookups start in a day, and none at all when the state under the user's cache directory cannot be kept
 - **Platform Abstraction**: Cross-platform file operations for download, extract, move, and permissions, in pure Go on Unix and Windows alike: moves fall back to a copy across volumes, and zip extraction refuses entries that would land outside the destination
+- **Verified downloads**: the release archive is checked against the SHA-256 digest GitHub reports for it and against its line in the release's `checksums.txt` before anything is extracted, and a release that states neither is refused
 - **Safe binary replacement**: the new release is staged beside the running binary and swapped in with renames, under a unique backup name, so an update succeeds on Windows even while an earlier release is still running
 - **Version Comparison**: Semantic version comparison with dev-build awareness
 
@@ -32,6 +33,12 @@ err := cmd.Execute(dryRun, force)
 ```
 
 The self-update command expects release assets named `{binary}-{version}-{os}-{arch}.tar.gz` (`.zip` on Windows), which matches the GoReleaser default naming convention.
+
+Before it extracts an archive, it checks the archive's SHA-256 against every digest the release states for it:
+- the `digest` GitHub computed when the asset was uploaded, which the release API reports;
+- the archive's line in the `checksums.txt` GoReleaser publishes beside it (`<sha256>  <file>`).
+
+A mismatch with either one, a `checksums.txt` that leaves the archive out, and a release that states neither all stop the update before the running binary is touched.
 
 ## Contributing
 

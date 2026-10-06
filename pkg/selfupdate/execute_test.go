@@ -89,6 +89,7 @@ func TestExecute(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, int32(1), server.lookups.Load())
 		assert.Zero(t, server.downloads.Load())
+		assert.Zero(t, server.checksumFetches.Load())
 		assert.Equal(t, "current release", readFile(t, binary))
 	})
 
@@ -104,6 +105,7 @@ func TestExecute(t *testing.T) {
 		// then
 		require.NoError(t, err)
 		assert.Zero(t, server.downloads.Load())
+		assert.Zero(t, server.checksumFetches.Load())
 		assert.Equal(t, "old release", readFile(t, binary))
 	})
 

@@ -52,7 +52,8 @@ cliforge/
 │   │   ├── install_binary.go  # installBinary: stage, unique backup, swap, best-effort cleanup
 │   │   ├── check_for_updates.go # CheckForUpdates: passive startup version check; the day counts as checked once a lookup answers, at most 5 lookups/day
 │   │   ├── update_check_state.go # The check's state under os.UserCacheDir(): success marker and today's attempt count
-│   │   ├── github.go          # fetchLatestRelease: GitHub API call, asset matching by {binary}-{version}-{os}-{arch}.{ext}
+│   │   ├── github.go          # fetchLatestRelease: GitHub API call, asset matching by {binary}-{version}-{os}-{arch}.{ext}; fetchChecksums
+│   │   ├── verify_archive.go  # releaseDigests + verifyArchive: the archive must match the API digest and checksums.txt
 │   │   ├── version.go         # CompareVersions: semver comparison, "dev" always older, zero-padding
 │   │   ├── version_test.go    # Unit tests for CompareVersions
 │   │   └── archive.go         # extractArchive: tar (Unix) or platform.OS.Extract, i.e. Go archive/zip (Windows)
@@ -77,7 +78,7 @@ cliforge/
 | `OSUnix`            | `platform`   | Unix implementation: pure-Go move/remove/extract plus `os.Chmod`                    |
 | `OSWindows`         | `platform`   | Windows implementation: the same pure-Go move/remove/extract                        |
 | `Info`      | `platform`   | Normalizes `runtime.GOOS`/`runtime.GOARCH` (handles Android-to-Linux mapping)        |
-| `Command` | `selfupdate` | Main public API: check for updates from GitHub releases, download, backup, replace   |
+| `Command` | `selfupdate` | Main public API: check for updates from GitHub releases, download, verify, replace   |
 | `CompareVersions`   | `selfupdate` | Semver comparison; `"dev"` always older; pads unequal-length versions with zeros      |
 | `GitHubRelease`     | `selfupdate` | JSON mapping for GitHub release API response                                         |
 

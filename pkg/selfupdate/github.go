@@ -16,6 +16,9 @@ const (
 	fetchTimeout     = 30 * time.Second
 	githubAPIBaseURL = "https://api.github.com"
 	windowsOS        = "windows"
+	// maxChecksumsSize bounds the checksums.txt read into memory. GoReleaser
+	// writes one line per artifact, so a real one is a few hundred bytes.
+	maxChecksumsSize = 1 << 20
 )
 
 // GitHubRelease represents a GitHub release response.
@@ -24,7 +27,24 @@ type GitHubRelease struct {
 	Assets  []struct {
 		Name               string `json:"name"`
 		BrowserDownloadURL string `json:"browser_download_url"`
+		// Digest is the "<algorithm>:<hex>" digest GitHub computed when the asset
+		// was uploaded, empty when it reports none.
+		Digest string `json:"digest"`
 	} `json:"assets"`
+}
+
+// releaseAsset is the archive the latest release ships for the running platform,
+// together with what the release states about its content.
+type releaseAsset struct {
+	version string
+	name    string
+	url     string
+	// digest is the digest GitHub reports for the archive, empty when it reports
+	// none.
+	digest string
+	// checksumsURL locates the checksums.txt published beside the archive, empty
+	// when the release has none.
+	checksumsURL string
 }
 
 // fetchGitHubRelease fetches the latest release metadata from the GitHub API at
@@ -74,26 +94,66 @@ func fetchLatestVersion(apiBaseURL, owner, repo string) (string, error) {
 	return strings.TrimPrefix(release.TagName, "v"), nil
 }
 
-// fetchLatestRelease fetches the latest release from GitHub and returns
-// the version string, the download URL for the current platform, and any error.
-func fetchLatestRelease(apiBaseURL, owner, repo, binaryName string) (string, string, error) {
+// fetchLatestRelease fetches the latest release from GitHub and returns the
+// archive it ships for the current platform.
+func fetchLatestRelease(apiBaseURL, owner, repo, binaryName string) (releaseAsset, error) {
 	release, err := fetchGitHubRelease(apiBaseURL, owner, repo)
 	if err != nil {
-		return "", "", err
+		return releaseAsset{}, err
 	}
 
 	version := strings.TrimPrefix(release.TagName, "v")
 
 	p := platform.GetInfo()
-	expectedAssetName := releaseAssetName(binaryName, version, p)
+	asset := releaseAsset{version: version, name: releaseAssetName(binaryName, version, p)}
 
-	for _, asset := range release.Assets {
-		if asset.Name == expectedAssetName {
-			return version, asset.BrowserDownloadURL, nil
+	found := false
+	for _, candidate := range release.Assets {
+		switch candidate.Name {
+		case asset.name:
+			asset.url = candidate.BrowserDownloadURL
+			asset.digest = candidate.Digest
+			found = true
+		case checksumsAssetName:
+			asset.checksumsURL = candidate.BrowserDownloadURL
 		}
 	}
+	if !found {
+		return releaseAsset{}, fmt.Errorf("no asset %q found for platform %s", asset.name, p.GetPlatformString())
+	}
 
-	return "", "", fmt.Errorf("no asset %q found for platform %s", expectedAssetName, p.GetPlatformString())
+	return asset, nil
+}
+
+// fetchChecksums downloads the checksums.txt at url.
+func fetchChecksums(url string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), fetchTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", fmt.Errorf("error creating request: %w", err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("error downloading %s: %w", checksumsAssetName, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("downloading %s returned status %d", checksumsAssetName, resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxChecksumsSize+1))
+	if err != nil {
+		return "", fmt.Errorf("error reading %s: %w", checksumsAssetName, err)
+	}
+	if len(body) > maxChecksumsSize {
+		return "", fmt.Errorf("%s is larger than %d bytes", checksumsAssetName, maxChecksumsSize)
+	}
+
+	return string(body), nil
 }
 
 // releaseAssetName is the name GoReleaser gives the archive of binaryName at
