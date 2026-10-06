@@ -13,6 +13,18 @@ nothing.
 
 ## [Unreleased]
 
+## [0.4.7] - 2026-10-05
+
+### Changed
+
+- changed `OSUnix` and `OSWindows` to move, remove and unzip files in Go instead of running `mv`, `rm`, `unzip`, `move`, `del` and PowerShell: a move across volumes becomes a copy finished by a rename, so the destination always becomes a new file, and a zip entry can no longer land outside the destination directory
+- changed the unit tests to carry no build tag, so a plain `go test ./...` runs them, and added a `windows-latest` CI job that runs the suite on Windows, where the self-update code paths had never executed
+
+### Fixed
+
+- fixed `self-update` on Windows, which could not succeed: the download was saved without the `.zip` extension that PowerShell's `Expand-Archive` requires, and the swap ran `move` and `del`, which are `cmd.exe` builtins with no executable behind them. Extraction and the swap now run in Go, the new binary is staged beside the running one before the swap, and every backup gets a unique name, so an update succeeds even while an earlier release still runs from its backup, as a detached daemon does
+- fixed the passive update check spending the day's check before its lookup returned, so a command that exits within milliseconds printed no notice and suppressed it for the rest of the day: the day now counts as checked only once a lookup has answered, and no more than 5 lookups start in a day while none answers, which keeps short-lived callers such as health probes from becoming one API call per run. The lookup is now skipped, instead of running on every invocation, when the state under the user's cache directory cannot be used, and a binary name such as `..` can no longer place that state outside the cache directory
+
 ## [0.4.6] - 2026-09-09
 
 ### Changed
