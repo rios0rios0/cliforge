@@ -52,10 +52,11 @@ func (it *Command) Execute(dryRun, force bool) error {
 	logger.Infof("Checking for %s updates...", it.binaryName)
 	logger.Infof("Current %s version: %s", it.binaryName, it.currentVersion)
 
-	latestVersion, downloadURL, err := fetchLatestRelease(it.apiBaseURL, it.owner, it.repo, it.binaryName)
+	asset, err := fetchLatestRelease(it.apiBaseURL, it.owner, it.repo, it.binaryName)
 	if err != nil {
 		return fmt.Errorf("failed to fetch latest release: %w", err)
 	}
+	latestVersion := asset.version
 
 	logger.Infof("Latest %s version: %s", it.binaryName, latestVersion)
 
@@ -64,7 +65,7 @@ func (it *Command) Execute(dryRun, force bool) error {
 	case comparison < 0:
 		if dryRun {
 			logger.Infof("Dry run: Would update %s from %s to %s", it.binaryName, it.currentVersion, latestVersion)
-			logger.Infof("Download URL: %s", downloadURL)
+			logger.Infof("Download URL: %s", asset.url)
 			return nil
 		}
 
@@ -74,7 +75,7 @@ func (it *Command) Execute(dryRun, force bool) error {
 		}
 
 		logger.Infof("Updating %s from %s to %s...", it.binaryName, it.currentVersion, latestVersion)
-		return it.performUpdate(downloadURL)
+		return it.performUpdate(asset)
 
 	case comparison == 0:
 		logger.Infof("%s is already up to date", it.binaryName)
@@ -103,12 +104,21 @@ func (it *Command) promptForUpdate(latestVersion string) bool {
 	return response == "y" || response == "yes"
 }
 
-func (it *Command) performUpdate(downloadURL string) error {
+// performUpdate downloads asset, checks it against every digest the release
+// states for it, and installs the binary it holds in place of the running one.
+// Nothing is downloaded when the release states no usable digest, and nothing is
+// extracted from an archive that does not match.
+func (it *Command) performUpdate(asset releaseAsset) error {
 	currentOS := platform.GetOS()
 
 	currentExe, err := it.executable()
 	if err != nil {
 		return err
+	}
+
+	digests, err := releaseDigests(asset)
+	if err != nil {
+		return fmt.Errorf("refusing to install %s: %w", asset.name, err)
 	}
 
 	tempDir, err := os.MkdirTemp("", fmt.Sprintf("%s-update-*", it.binaryName))
@@ -124,9 +134,15 @@ func (it *Command) performUpdate(downloadURL string) error {
 	tempArchive := filepath.Join(tempDir, fmt.Sprintf("%s-archive", it.binaryName))
 
 	logger.Info("Downloading new version...")
-	err = currentOS.Download(downloadURL, tempArchive)
+	err = currentOS.Download(asset.url, tempArchive)
 	if err != nil {
 		return fmt.Errorf("failed to download new version: %w", err)
+	}
+
+	logger.Info("Verifying the download...")
+	err = verifyArchive(tempArchive, digests)
+	if err != nil {
+		return fmt.Errorf("refusing to install %s: %w", asset.name, err)
 	}
 
 	logger.Info("Extracting archive...")

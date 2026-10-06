@@ -5,6 +5,8 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -30,22 +32,32 @@ const (
 // release is what a fake GitHub serves as the latest release of owner/repo.
 type release struct {
 	version string
-	// assetName is the one asset the release lists; empty means this platform's.
+	// assetName is the archive the release lists; empty means this platform's.
 	assetName string
 	archive   []byte
-	// latestStatus and assetStatus override the HTTP status of the release
-	// lookup and of the download; zero means 200.
-	latestStatus int
-	assetStatus  int
+	// digest is the digest the API reports for the archive: empty means its real
+	// SHA-256, and noDigest reports none at all.
+	digest   string
+	noDigest bool
+	// checksums is the checksums.txt published beside the archive: empty means
+	// one listing its real SHA-256, and noChecksums publishes none at all.
+	checksums   string
+	noChecksums bool
+	// latestStatus, assetStatus and checksumsStatus override the HTTP status of
+	// the release lookup, of the download and of checksums.txt; zero means 200.
+	latestStatus    int
+	assetStatus     int
+	checksumsStatus int
 }
 
-// releaseServer fakes the GitHub API and the release download for owner/repo,
+// releaseServer fakes the GitHub API and the release downloads for owner/repo,
 // counting the requests it answers.
 type releaseServer struct {
 	*httptest.Server
 
-	lookups   atomic.Int32
-	downloads atomic.Int32
+	lookups         atomic.Int32
+	downloads       atomic.Int32
+	checksumFetches atomic.Int32
 }
 
 // newReleaseServer serves rel as the latest release until the test ends.
@@ -53,6 +65,12 @@ func newReleaseServer(t *testing.T, rel release) *releaseServer {
 	t.Helper()
 	if rel.assetName == "" {
 		rel.assetName = selfupdate.ReleaseAssetName(binaryName, rel.version)
+	}
+	if rel.digest == "" {
+		rel.digest = "sha256:" + sha256Hex(rel.archive)
+	}
+	if rel.checksums == "" {
+		rel.checksums = checksumsLine(sha256Hex(rel.archive), rel.assetName)
 	}
 	server := &releaseServer{}
 	mux := http.NewServeMux()
@@ -65,10 +83,7 @@ func newReleaseServer(t *testing.T, rel release) *releaseServer {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]any{
 			"tag_name": rel.version,
-			"assets": []map[string]string{{
-				"name":                 rel.assetName,
-				"browser_download_url": server.URL + "/assets/" + rel.assetName,
-			}},
+			"assets":   releaseAssets(server.URL, rel),
 		})
 	})
 	mux.HandleFunc("GET /assets/{name}", func(w http.ResponseWriter, _ *http.Request) {
@@ -79,9 +94,50 @@ func newReleaseServer(t *testing.T, rel release) *releaseServer {
 		}
 		_, _ = w.Write(rel.archive)
 	})
+	mux.HandleFunc("GET /checksums.txt", func(w http.ResponseWriter, _ *http.Request) {
+		server.checksumFetches.Add(1)
+		if rel.checksumsStatus != 0 {
+			w.WriteHeader(rel.checksumsStatus)
+			return
+		}
+		_, _ = w.Write([]byte(rel.checksums))
+	})
 	server.Server = httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 	return server
+}
+
+// releaseAssets lists the assets of rel the way the GitHub API does, with the
+// archive's digest null when the release reports none.
+func releaseAssets(serverURL string, rel release) []map[string]any {
+	var digest any = rel.digest
+	if rel.noDigest {
+		digest = nil
+	}
+	assets := []map[string]any{{
+		"name":                 rel.assetName,
+		"browser_download_url": serverURL + "/assets/" + rel.assetName,
+		"digest":               digest,
+	}}
+	if !rel.noChecksums {
+		assets = append(assets, map[string]any{
+			"name":                 "checksums.txt",
+			"browser_download_url": serverURL + "/checksums.txt",
+			"digest":               "sha256:" + sha256Hex([]byte(rel.checksums)),
+		})
+	}
+	return assets
+}
+
+// sha256Hex is the SHA-256 digest of data in hex.
+func sha256Hex(data []byte) string {
+	sum := sha256.Sum256(data)
+	return hex.EncodeToString(sum[:])
+}
+
+// checksumsLine is the line GoReleaser writes into checksums.txt for file.
+func checksumsLine(digest, file string) string {
+	return digest + "  " + file + "\n"
 }
 
 // binaryFileName is the file name binaryName has on the running platform.

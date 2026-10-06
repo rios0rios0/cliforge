@@ -30,10 +30,10 @@ Two packages, both consumed as library imports by downstream CLI tools:
 
 ### `pkg/selfupdate/` -- GitHub release self-update
 - `Command` (`selfupdate.go`) is the main public API. Created via `NewCommand(owner, repo, binaryName, currentVersion)`, executed via `Execute(dryRun, force)` or checked passively via `CheckForUpdates()`
-- Update flow: fetch latest GitHub release -> compare versions -> download matching asset -> extract -> `installBinary` (`install_binary.go`): stage the new binary beside the running one as `<exe>.new` (the only step that can cross volumes) -> remove backups earlier updates left -> move the running binary to a unique `<exe>.backup-<unixnano>` -> move the staged binary into its place -> remove the backup, or keep it when Windows refuses because it is still the image of a running process (the next update removes it). Unique backup names keep a binary still running from an earlier backup, such as a daemon, from blocking the next update. The new binary always reaches the path as a new file, never written in place, so consumers can detect an install with `os.SameFile`
+- Update flow: fetch latest GitHub release -> compare versions -> collect the digests the release states for the matching asset (`releaseDigests` in `verify_archive.go`: the `digest` the API reports, and the asset's line in the release's `checksums.txt`; none at all refuses the update before downloading) -> download the asset -> `verifyArchive`: its SHA-256 must match every one of them -> extract -> `installBinary` (`install_binary.go`): stage the new binary beside the running one as `<exe>.new` (the only step that can cross volumes) -> remove backups earlier updates left -> move the running binary to a unique `<exe>.backup-<unixnano>` -> move the staged binary into its place -> remove the backup, or keep it when Windows refuses because it is still the image of a running process (the next update removes it). Unique backup names keep a binary still running from an earlier backup, such as a daemon, from blocking the next update. The new binary always reaches the path as a new file, never written in place, so consumers can detect an install with `os.SameFile`
 - `CheckForUpdates` (`check_for_updates.go`) passively checks for newer versions on CLI startup. Skips if the current version is `"dev"`, the binary was modified today, or a lookup already answered today. Its state lives under the user's cache directory (`os.UserCacheDir()`, see `update_check_state.go`): `last_update_check` is touched only after a lookup answers (after warning), so a command that exits before its lookup returns leaves the check to the next command; `update_check_attempts` counts today's started lookups and caps them at `maxUpdateCheckAttemptsPerDay` (5), so short-lived callers cannot hammer the API. When that state cannot be resolved, read or written, the lookup is skipped rather than run unthrottled. The lookup runs in the background (`Command.background`) to avoid blocking startup; errors are logged at debug level. `Command`'s `executable`, `cacheDir`, `now`, `background` and `apiBaseURL` fields exist so `export_test.go` can drive all of this deterministically
 - `ShouldCheckForUpdates` (`check_for_updates.go`) is a pure function that returns false when two timestamps fall on the same calendar day; used for the binary modification time and for both state files
-- `fetchLatestRelease` (`github.go`) calls `api.github.com` with 30s timeout, matches assets by pattern `{binary}-{version}-{os}-{arch}.{tar.gz|zip}`
+- `fetchLatestRelease` (`github.go`) calls `api.github.com` with 30s timeout, matches assets by pattern `{binary}-{version}-{os}-{arch}.{tar.gz|zip}`, and returns a `releaseAsset` carrying the asset's API `digest` and the URL of the release's `checksums.txt`; `fetchChecksums` reads that file with the same timeout, capped at `maxChecksumsSize`
 - `CompareVersions` (`version.go`) implements semver comparison; treats `"dev"` as always older; pads unequal-length versions with zeros
 - `extractArchive` (`archive.go`) runs `tar` on Unix and `platform.OS.Extract` (Go `archive/zip`) on Windows
 
@@ -44,12 +44,13 @@ Consumer CLI tool
        -> platform.OS (interface, injected per OS via build tags)
        -> selfupdate.CompareVersions (pure function)
        -> selfupdate.fetchLatestRelease (HTTP + JSON)
+       -> selfupdate.releaseDigests / verifyArchive (API digest + checksums.txt, SHA-256)
        -> logrus (structured logging)
 ```
 
 ## Asset Naming Convention
 
-The self-update system expects GoReleaser-standard asset names: `{binary}-{version}-{os}-{arch}.tar.gz` (Unix) or `.zip` (Windows).
+The self-update system expects GoReleaser-standard asset names: `{binary}-{version}-{os}-{arch}.tar.gz` (Unix) or `.zip` (Windows). It verifies the archive against the SHA-256 `digest` GitHub reports for the asset and against the release's `checksums.txt` (`<sha256>  <file>` lines, as GoReleaser writes them), and refuses a release that states neither. Only SHA-256 is checked: a digest GitHub reports in another algorithm is skipped, and `checksums.txt` then has to vouch for the archive alone.
 
 <!-- chlog:start -->
 ## Changelog (chlog) — MANDATORY
