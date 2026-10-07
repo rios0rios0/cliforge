@@ -13,6 +13,12 @@ nothing.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-07
+
+### Added
+
+- added verification of the release archive before `Execute` installs it: its SHA-256 must match the digest GitHub reports for the asset and the asset's line in the release's `checksums.txt`, and a mismatch, a `checksums.txt` that leaves the archive out, or a release stating neither stops the update before the running binary is touched
+
 ## [0.4.7] - 2026-10-05
 
 ### Changed
