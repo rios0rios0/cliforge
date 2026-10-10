@@ -6,7 +6,7 @@ require (
 	github.com/rios0rios0/testkit v0.3.5
 	github.com/sirupsen/logrus v1.10.2
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/sys v0.48.0
+	golang.org/x/sys v0.49.0
 )
 
 require go.yaml.in/yaml/v3 v3.0.5 // indirect
