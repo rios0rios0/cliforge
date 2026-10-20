@@ -50,6 +50,8 @@ func update(t *testing.T, binary, version string, rel release) error {
 // TestExecuteWhileRunning is deliberately not parallel. It writes binaries and
 // then starts them, and on Linux a start fails with ETXTBSY if another test forks
 // a process while such a binary is still open for writing.
+//
+//nolint:paralleltest // a concurrent fork makes starting the freshly written binaries fail with ETXTBSY
 func TestExecuteWhileRunning(t *testing.T) {
 	t.Run("should replace the binary while it is running", func(t *testing.T) {
 		// given
