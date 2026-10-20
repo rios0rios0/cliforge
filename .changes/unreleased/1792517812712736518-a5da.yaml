@@ -1,0 +1,3 @@
+kind: 'Changed'
+body: 'exempted the deliberately sequential test that updates a running binary from the `paralleltest` linter newly enabled by the shared golangci-lint configuration'
+time: '2026-10-20T17:36:52.712689224Z'
