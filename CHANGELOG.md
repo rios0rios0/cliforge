@@ -13,6 +13,14 @@ nothing.
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-10-21
+
+### Changed
+
+- changed the Go module `github.com/rios0rios0/testkit` from `v0.3.5` to `v0.3.6`
+- changed the Go version from `1.27.2` to `1.27.3`
+- exempted the deliberately sequential test that updates a running binary from the `paralleltest` linter newly enabled by the shared golangci-lint configuration
+
 ## [0.5.1] - 2026-10-14
 
 ### Changed
