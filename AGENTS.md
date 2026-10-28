@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI coding agents (Claude Code, Codex, Cursor, GitHub Copilot) when working with code in this repository.
 
 ## Project Overview
 
@@ -13,10 +13,12 @@ go build ./...          # Compile the library
 go mod download         # Install dependencies
 go test ./...           # Run all tests
 go test -run TestName ./pkg/selfupdate  # Run a single test
-make lint               # Lint (requires pipelines setup: make setup)
+make lint               # Lint
 make test               # Run tests via Makefile
 make sast               # Run security analysis
 ```
+
+The `Makefile` defines no targets of its own: it `-include`s them from a [rios0rios0/pipelines](https://github.com/rios0rios0/pipelines) checkout at `SCRIPTS_DIR` (default `$(HOME)/Development/github.com/rios0rios0/pipelines`). Without that checkout every `make` target is undefined; clone it there or pass `SCRIPTS_DIR=<path>`.
 
 ## Architecture
 

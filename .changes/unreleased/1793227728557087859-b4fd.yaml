@@ -1,0 +1,3 @@
+kind: 'Changed'
+body: 'refreshed `AGENTS.md`, `.github/copilot-instructions.md` and the code-review skill to point at `AGENTS.md` instead of `CLAUDE.md`, explain where the `make` targets come from, and add the archive-verification step to the Copilot dependency flow'
+time: '2026-10-28T22:48:48.557008812Z'

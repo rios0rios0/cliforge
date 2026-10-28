@@ -20,7 +20,7 @@ The canonical engineering standards live in the
 repo-tailored index into that guide plus the rules that only apply here. Precedence, highest
 first:
 
-1. This repository's `.github/copilot-instructions.md`, `CLAUDE.md`, and `CONTRIBUTING.md` —
+1. This repository's `.github/copilot-instructions.md`, `AGENTS.md`, and `CONTRIBUTING.md` —
    they describe *this* codebase and its load-bearing invariants.
 2. The **rios0rios0/guide** wiki — the shared standard.
 3. General language idiom.
@@ -144,7 +144,7 @@ See [Tests](https://github.com/rios0rios0/guide/wiki/Tests).
 
 - Unit tests carry no build tag, so a plain `go test ./...` finds them; a `//go:build integration` tag is only for tests that need external infrastructure. The suite also runs on `windows-latest` in CI (`tests > test:windows`), which is the only place the Windows code paths execute.
 - `"should … when …"` subtests under `t.Run()`, `t.Parallel()` unless the test mutates process-wide state (for example `t.Setenv`).
-- Doubles come from `pkg/test/doubles/` (`OSStub`) and are constructed with the fluent builders in `pkg/test/builders/` — never a mocking framework.
+- Doubles come from `pkg/test/doubles/` (`OSStub`, `OSFaultStub`) and are constructed with the fluent builders in `pkg/test/builders/` — never a mocking framework.
 
 ### Rules that hold for every test in this repository
 
@@ -187,8 +187,9 @@ hand.
 - Fragment bodies start with a lowercase verb in simple past tense, capitalise proper nouns
   (GitHub, Go, Docker), and wrap code identifiers and versions in backticks.
 - `README.md` is updated whenever usage, setup, configuration, or architecture changes;
-  `.github/copilot-instructions.md` and `CLAUDE.md` whenever the workflow, commands, or
-  structure changes. Documentation and code ship in one commit.
+  `.github/copilot-instructions.md` and `AGENTS.md` whenever the workflow, commands, or
+  structure changes (`CLAUDE.md` holds only the import line `@AGENTS.md`). Documentation and
+  code ship in one commit.
 
 ## Git Flow and pull-request hygiene
 
@@ -231,6 +232,7 @@ See [Security](https://github.com/rios0rios0/guide/wiki/Security).
 A review that raises noise gets ignored. Do not report these:
 
 - The absence of a binary or CLI — that is the point of the module.
+- `selfupdate.Command` against the `<Operation><Entity>Command` naming rule or the `"should call <listener> when …"` description rule: it is the module's public entry point, not a listener-based command — it lives in `selfupdate.go`, exposes both `Execute` and `CheckForUpdates`, and renaming or reshaping it breaks every consumer. Its tests use `"should … when …"`.
 - Anything the guide does not require and this file does not list, unless it is a genuine correctness or security defect — say so plainly and label it a Suggestion.
 
 ## Review output format
@@ -250,7 +252,7 @@ A review that raises noise gets ignored. Do not report these:
 ### Change-control checklist
 - [ ] Changelog entry present for every behavioural change
 - [ ] `README.md` updated if usage, setup, or architecture changed
-- [ ] `.github/copilot-instructions.md` and `CLAUDE.md` updated if the workflow, commands, or structure changed
+- [ ] `.github/copilot-instructions.md` and `AGENTS.md` updated if the workflow, commands, or structure changed
 - [ ] Commit messages follow `type(SCOPE): message` in simple past tense
 - [ ] Breaking changes flagged in the commit footer, the changelog, and the PR description
 
