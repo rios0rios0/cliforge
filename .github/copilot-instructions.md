@@ -2,7 +2,7 @@
 
 cliforge is a shared Go library providing self-update and platform abstraction for CLI tools that distribute binaries via GitHub Releases. It is consumed by downstream CLI projects via Go module imports. This is a **library**, not a standalone binary -- there is no `main.go` or CLI.
 
-Always reference these instructions first and fall back to search or bash commands only when you encounter unexpected information that does not match the info here.
+Reference these instructions first. Where they and the code disagree, the code is current.
 
 ## Working Effectively
 
@@ -11,8 +11,8 @@ Always reference these instructions first and fall back to search or bash comman
 - Install dependencies: `go mod download`
 - Build (compile check): `go build ./...`
 - Run tests: `make test` (preferred) or `go test ./...` for quick checks during development.
-- Run linting: `make lint` -- NEVER run `golangci-lint` directly.
-- Run security analysis: `make sast` -- NEVER run `gitleaks`, `semgrep`, `trivy`, `hadolint`, or `codeql` directly.
+- Run linting: `make lint`, not `golangci-lint` directly -- the pipeline targets load the shared configuration before invoking each tool.
+- Run security analysis: `make sast`, not `gitleaks`, `semgrep`, `trivy`, `hadolint`, or `codeql` directly, for the same reason.
 - Tidy dependencies: `go mod tidy`
 
 ### Linting, Testing, and SAST with Makefile
@@ -90,6 +90,7 @@ Consumer CLI tool
        -> platform.OS (interface, injected per OS via build tags)
        -> selfupdate.CompareVersions (pure function)
        -> selfupdate.fetchLatestRelease (HTTP + JSON)
+       -> selfupdate.releaseDigests / verifyArchive (API digest + checksums.txt, SHA-256)
        -> logrus (structured logging)
 ```
 
@@ -117,7 +118,7 @@ Consumer CLI tool
 ### Running Tests
 
 ```bash
-make test             # Full test suite via pipeline scripts (ALWAYS use this)
+make test             # Full test suite via pipeline scripts (preferred)
 go test ./...         # Quick compile + test check during development (acceptable)
 ```
 
