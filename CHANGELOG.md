@@ -13,6 +13,16 @@ nothing.
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-11-04
+
+### Changed
+
+- changed the Go module `github.com/rios0rios0/testkit` from `v0.3.6` to `v0.3.7`
+- changed the Go module `go.yaml.in/yaml/v3` from `v3.0.5` to `v3.0.6`
+- changed the Windows test run into an input of the shared Go pipeline (`extra_test_*`), so `tests > test:windows` runs in its tests stage, after the security stage and before delivery, instead of as a job of its own that started at once beside the first stage; the check is now reported as `default / go / tests > test:windows`
+- moved the agent instructions from `CLAUDE.md` to `AGENTS.md`, keeping a `CLAUDE.md` that imports it
+- refreshed `AGENTS.md`, `.github/copilot-instructions.md` and the code-review skill to point at `AGENTS.md` instead of `CLAUDE.md`, explain where the `make` targets come from, and add the archive-verification step to the Copilot dependency flow
+
 ## [0.5.2] - 2026-10-21
 
 ### Changed
